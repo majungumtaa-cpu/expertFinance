@@ -27,40 +27,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// ================================================
-// LIVE DATA kutoka cafeteria database
-// ================================================
-const CAFETERIA_API = 'http://cafeterias.infinityfree.me/menu_api.php';
-
-let cachedData = null;
-let cacheTime = 0;
-const CACHE_TTL = 30 * 1000; // 30 sekunde
-
-async function fetchCafeteriaData() {
-    const now = Date.now();
-    if (cachedData && (now - cacheTime) < CACHE_TTL) {
-        return cachedData;
-    }
-    try {
-        console.log('[DATA] Fetching:', CAFETERIA_API);
-        const res = await fetch(CAFETERIA_API);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const text = await res.text();
-        cachedData = JSON.parse(text);
-        cacheTime = now;
-        console.log('[DATA] Menu items:', cachedData.menu?.length || 0);
-        console.log('[DATA] Events:', cachedData.events?.length || 0);
-        console.log('[DATA] Payment methods:', cachedData.payment_methods?.length || 0);
-        return cachedData;
-    } catch (err) {
-        console.error('[DATA] Fetch failed:', err.message);
-        return cachedData || { menu: [], events: [], payment_methods: [], categories: [] };
-    }
-}
-
-// ================================================
-// EXCHANGE RATES
-// ================================================
+// Exchange rates (only use if user asks for conversion)
 const EXCHANGE_RATES = {
   USD: 1.00, TZS: 2641.89, KES: 129.50, UGX: 3700.00,
   EUR: 0.92, GBP: 0.79, ZAR: 18.50, NGN: 1550.00,
@@ -69,22 +36,27 @@ const EXCHANGE_RATES = {
 
 // ================================================
 // CHAT ENDPOINT
+// Receives: { message, history, cafeteria_data }
+// cafeteria_data comes from the browser (fetched from menu_api.php)
 // ================================================
 app.post('/api/chat', async (req, res) => {
-    const { message, history = [] } = req.body;
+    const { message, history = [], cafeteria_data } = req.body;
     if (!message) return res.status(400).json({ error: "Please provide a message." });
 
-    const data = await fetchCafeteriaData();
+    // ✅ Data inatoka kwa browser (kutoka menu_api.php)
+    const data = cafeteria_data || { menu: [], events: [], payment_methods: [] };
 
-    const menuText = data.menu.length > 0
+    console.log('[CHAT] Received data - menu:', data.menu?.length || 0, '| events:', data.events?.length || 0, '| payments:', data.payment_methods?.length || 0);
+
+    const menuText = (data.menu && data.menu.length > 0)
         ? data.menu.map(p => `- ${p.name} (${p.category}): TZS ${p.price} | Stock: ${p.quantity}`).join('\n')
-        : 'Menu not loaded.';
+        : 'Menu is currently empty.';
 
-    const eventsText = data.events.length > 0
-        ? data.events.map(e => `- ${e.name} on ${e.date}`).join('\n')
-        : 'No events.';
+    const eventsText = (data.events && data.events.length > 0)
+        ? data.events.map(e => `- ${e.name} on ${e.date}${e.description ? ': ' + e.description : ''}`).join('\n')
+        : 'No upcoming events.';
 
-    const paymentText = data.payment_methods.length > 0
+    const paymentText = (data.payment_methods && data.payment_methods.length > 0)
         ? data.payment_methods.join(', ')
         : 'Cash';
 
@@ -94,15 +66,15 @@ STRICT RULES:
 1. NO emojis. NO icons. NO symbols. Plain text only.
 2. Answer ONLY what user asked. Nothing extra.
 3. Keep replies SHORT. 1-3 lines max.
-4. Talk natural, like a friend. Not like a robot.
+4. Talk natural, like a friend.
 5. NEVER add "How can I help you today?" or similar extra lines.
 6. NEVER add closing lines like "Let me know if you need anything".
-7. Reply in the SAME language user used (English, Swahili, French, etc).
-8. Use ONLY the data below. Never invent items or prices.
-9. If asked about an item not in the list, say it's not available.
+7. Reply in the SAME language user used.
+8. Use ONLY the real data below. Never invent.
+9. If an item is not in the list, say it's not available.
 
 FORMATTING:
-- Plain text only. No stars, no hashes, no bullets.
+- Plain text only. No stars, no hashes, no bullets with symbols.
 - Use numbers (1. 2. 3.) for lists only.
 
 REAL MENU (from our database):
@@ -116,7 +88,7 @@ PAYMENT METHODS: ${paymentText}
 Exchange rates (use ONLY if user asks for conversion):
 TZS: ${EXCHANGE_RATES.TZS}, KES: ${EXCHANGE_RATES.KES}, EUR: ${EXCHANGE_RATES.EUR}, GBP: ${EXCHANGE_RATES.GBP}
 
-EXAMPLES OF GOOD REPLIES:
+EXAMPLES:
 
 User: "Hi"
 You: "Hi! How can I help?"
@@ -126,12 +98,11 @@ You: "I'm good, thanks."
 
 User: "Show me the menu"
 You: "Here's what we have:
-1. Beef Pilau - TZS 2.80
-2. Chapati Beans - TZS 16.00
-3. Apple - TZS 20.00"
+1. [item name] - TZS [price]
+2. [item name] - TZS [price]"
 
 User: "Bei ya Pilau"
-You: "Beef Pilau ni TZS 2.80."
+You: "[Item name] ni TZS [price]."
 
 User: "Bye"
 You: "Bye!"`;
@@ -171,10 +142,6 @@ You: "Bye!"`;
 });
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
-app.get('/data', async (req, res) => {
-    const data = await fetchCafeteriaData();
-    res.json(data);
-});
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 app.listen(PORT, () => {
