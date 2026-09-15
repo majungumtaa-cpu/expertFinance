@@ -5,6 +5,8 @@
 .env.local
 .env.production
 .env.development
+.env.test
+*.env
 
 # ============================================
 # Dependencies
@@ -12,6 +14,9 @@
 node_modules/
 package-lock.json
 yarn.lock
+pnpm-lock.yaml
+.npm/
+.pnpm-store/
 
 # ============================================
 # Logs and temporary files
@@ -22,6 +27,10 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+logs/
+*.tmp
+*.temp
+.tmp/
 
 # ============================================
 # Operating System files
@@ -42,7 +51,11 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+*.swn
 *~
+.project
+.classpath
+.settings/
 
 # ============================================
 # Build output
@@ -50,10 +63,30 @@ desktop.ini
 dist/
 build/
 out/
+.next/
+.nuxt/
+.cache/
 
 # ============================================
-# Cache
+# Runtime data
 # ============================================
-.npm/
-.cache/
-.parcel-cache/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================
+# Coverage directory
+# ============================================
+coverage/
+.nyc_output/
+*.lcov
+
+# ============================================
+# Misc
+# ============================================
+.sass-cache/
+.eslintcache
+.stylelintcache
+.node_repl_history
+.grunt/
