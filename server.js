@@ -19,7 +19,23 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 // ================================================
-// CAFETERIA DATA — Weka data yako hapa
+// ✅ CORS — Ruhusu maombi kutoka InfinityFree
+// ================================================
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Max-Age', '86400');
+    
+    // Handle preflight request
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
+// ================================================
+// CAFETERIA DATA
 // ================================================
 const CAFETERIA_DATA = {
   name: "Cafeteria Management System",
@@ -146,6 +162,17 @@ You: Yes, and mention halal options.
 User: "Habari"
 You: Greet warmly in Swahili.
 `.trim();
+
+// ================================================
+// HEALTH CHECK ENDPOINT
+// ================================================
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'cafeteria-assistant' });
+});
 
 // ================================================
 // CHAT ENDPOINT
