@@ -28,23 +28,29 @@ app.use((req, res, next) => {
 });
 
 // ================================================
-// FETCH LIVE DATA kutoka cafeteria database
+// LIVE DATA kutoka cafeteria database
 // ================================================
 const CAFETERIA_API = 'http://cafeterias.infinityfree.me/menu_api.php';
 
 let cachedData = null;
 let cacheTime = 0;
-const CACHE_TTL = 60 * 1000;
+const CACHE_TTL = 30 * 1000; // 30 sekunde
 
 async function fetchCafeteriaData() {
     const now = Date.now();
-    if (cachedData && (now - cacheTime) < CACHE_TTL) return cachedData;
+    if (cachedData && (now - cacheTime) < CACHE_TTL) {
+        return cachedData;
+    }
     try {
+        console.log('[DATA] Fetching:', CAFETERIA_API);
         const res = await fetch(CAFETERIA_API);
-        if (!res.ok) throw new Error('API error: ' + res.status);
-        cachedData = await res.json();
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const text = await res.text();
+        cachedData = JSON.parse(text);
         cacheTime = now;
-        console.log('[DATA] Fetched', cachedData.menu?.length || 0, 'items');
+        console.log('[DATA] Menu items:', cachedData.menu?.length || 0);
+        console.log('[DATA] Events:', cachedData.events?.length || 0);
+        console.log('[DATA] Payment methods:', cachedData.payment_methods?.length || 0);
         return cachedData;
     } catch (err) {
         console.error('[DATA] Fetch failed:', err.message);
@@ -72,46 +78,42 @@ app.post('/api/chat', async (req, res) => {
 
     const menuText = data.menu.length > 0
         ? data.menu.map(p => `- ${p.name} (${p.category}): TZS ${p.price} | Stock: ${p.quantity}`).join('\n')
-        : 'Menu not available.';
+        : 'Menu not loaded.';
 
     const eventsText = data.events.length > 0
         ? data.events.map(e => `- ${e.name} on ${e.date}`).join('\n')
         : 'No events.';
 
-    const paymentText = data.payment_methods.join(', ') || 'Cash';
+    const paymentText = data.payment_methods.length > 0
+        ? data.payment_methods.join(', ')
+        : 'Cash';
 
-    const SYSTEM_PROMPT = `
-You are a friendly cafeteria staff member chatting with a customer. Talk like a real human, warm and natural.
+    const SYSTEM_PROMPT = `You are a friendly cafeteria staff member. Talk like a real human.
 
-STRICT RULES — FOLLOW ALL:
-
-1. NO EMOJIS, NO ICONS, NO SYMBOLS. Plain text only.
-2. Answer ONLY what the user asked. Do NOT add extra info.
-3. Keep replies SHORT — 1 to 3 lines max.
-4. Talk like a human friend, not like a robot.
-5. Greeting → short greeting back. Example: "Hi! How can I help?"
-6. Question about menu → answer only that item or list.
-7. NEVER volunteer info like "How can I assist you today?" unless asked.
-8. NEVER add closing lines like "Let me know if you need anything else".
-9. Language: reply in the SAME language the user used.
-10. Use ONLY the real data below. Never invent menu items or prices.
+STRICT RULES:
+1. NO emojis. NO icons. NO symbols. Plain text only.
+2. Answer ONLY what user asked. Nothing extra.
+3. Keep replies SHORT. 1-3 lines max.
+4. Talk natural, like a friend. Not like a robot.
+5. NEVER add "How can I help you today?" or similar extra lines.
+6. NEVER add closing lines like "Let me know if you need anything".
+7. Reply in the SAME language user used (English, Swahili, French, etc).
+8. Use ONLY the data below. Never invent items or prices.
+9. If asked about an item not in the list, say it's not available.
 
 FORMATTING:
-- Plain text only. Numbers (1. 2. 3.) only for lists.
-- No bullets with symbols. No stars. No hashes.
-- No emojis. No icon characters.
+- Plain text only. No stars, no hashes, no bullets.
+- Use numbers (1. 2. 3.) for lists only.
 
-REAL DATA FROM DATABASE:
-
-MENU:
+REAL MENU (from our database):
 ${menuText}
 
 EVENTS:
 ${eventsText}
 
-PAYMENTS: ${paymentText}
+PAYMENT METHODS: ${paymentText}
 
-Exchange rates (only use if user asks for conversion):
+Exchange rates (use ONLY if user asks for conversion):
 TZS: ${EXCHANGE_RATES.TZS}, KES: ${EXCHANGE_RATES.KES}, EUR: ${EXCHANGE_RATES.EUR}, GBP: ${EXCHANGE_RATES.GBP}
 
 EXAMPLES OF GOOD REPLIES:
@@ -120,21 +122,19 @@ User: "Hi"
 You: "Hi! How can I help?"
 
 User: "How are you"
-You: "I'm good, thanks. What can I get you?"
+You: "I'm good, thanks."
 
 User: "Show me the menu"
-You:
-"Here's what we have:
-1. Beef Pilau - 2.80
-2. Chapati Beans - 16.00
-3. Apple - 20.00"
+You: "Here's what we have:
+1. Beef Pilau - TZS 2.80
+2. Chapati Beans - TZS 16.00
+3. Apple - TZS 20.00"
 
 User: "Bei ya Pilau"
 You: "Beef Pilau ni TZS 2.80."
 
 User: "Bye"
-You: "Bye! See you soon."
-`.trim();
+You: "Bye!"`;
 
     const messagesPayload = [
         { role: "system", content: SYSTEM_PROMPT },
@@ -171,6 +171,10 @@ You: "Bye! See you soon."
 });
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/data', async (req, res) => {
+    const data = await fetchCafeteriaData();
+    res.json(data);
+});
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 app.listen(PORT, () => {
