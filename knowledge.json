@@ -1,0 +1,102 @@
+[
+  {
+    "category": "menu",
+    "keywords": ["menu", "food", "eat", "chakula", "kula", "nini", "bei", "price", "show", "list"],
+    "response": "🍽️ **Today's Menu:**\n\n• Beef Pilau — TZS 2.80\n• Heated Maize — TZS 2.90\n• Sweet Potato — TZS 1.00\n• Fishes — TZS 2.50\n• Irish Smart — TZS 3.00\n• Chapati Beans — TZS 16.00\n• Beef — TZS 2.00\n• Boiled Maize — TZS 9.00\n• Chicken Meat — TZS 18.00\n• Samosa (3pcs) — TZS 14.00\n• Donna Josia (Boiled Cassava) — TZS 5.00\n• Apple — TZS 20.00\n\nAsk me about any specific dish for more details!"
+  },
+  {
+    "category": "specific_dish",
+    "keywords": ["pilau", "beef", "maize", "potato", "fish", "irish", "chapati", "beans", "chicken", "samosa", "cassava", "apple"],
+    "response": "🍽️ I found this dish on our menu. Please ask me about a specific item by name, and I'll give you its price and availability!"
+  },
+  {
+    "category": "breakfast",
+    "keywords": ["breakfast", "asubuhi", "morning", "kiamsha"],
+    "response": "🌅 **Breakfast Options:**\n\n• Donna Josia (Boiled Cassava) — TZS 5.00\n• Boiled Maize — TZS 9.00\n• Chapati Beans — TZS 16.00\n\nPerfect for a fresh morning start!"
+  },
+  {
+    "category": "drinks",
+    "keywords": ["drink", "drinks", "vinywaji", "soda", "juice", "water", "maji", "tea", "chai", "coffee", "kahawa"],
+    "response": "🥤 **Drinks:**\n\nWe have a variety of drinks available:\n• Fresh juices\n• Sodas\n• Tea and Coffee\n• Bottled water\n\nAsk our staff at the counter for today's available options!"
+  },
+  {
+    "category": "snacks",
+    "keywords": ["snack", "snacks", "vitafunio", "samosa", "apple", "small"],
+    "response": "🥪 **Snacks:**\n\n• Samosa (3pcs) — TZS 14.00\n• Apple — TZS 20.00\n\nPerfect for a quick bite between classes!"
+  },
+  {
+    "category": "order_tracking",
+    "keywords": ["order", "oda", "track", "tracking", "status", "where", "wapi", "my order", "check"],
+    "response": "📦 **Order Tracking:**\n\nTo track your order:\n1. Log in to your **Customer Portal**\n2. Go to **My Orders**\n3. View real-time status:\n   • Pending\n   • Preparing\n   • Ready\n   • Completed\n\nYour orders are updated live as our staff prepares them!"
+  },
+  {
+    "category": "dietary",
+    "keywords": ["dietary", "diet", "halal", "vegetarian", "vegan", "gluten", "allergy", "lishe", "special diet"],
+    "response": "🥗 **Dietary Information:**\n\nWe offer options for:\n• ✅ Halal\n• ✅ Vegetarian\n• ✅ Vegan\n• ✅ Gluten-Free\n• ✅ Dairy-Free\n• ✅ Nut-Free\n• ✅ Low-Sugar\n\nTell me which one you prefer, and I'll suggest matching dishes!"
+  },
+  {
+    "category": "halal",
+    "keywords": ["halal", "muslim", "islam", "waislamu"],
+    "response": "✅ **Halal Options:**\n\n• Beef Pilau\n• Beef\n• Chicken Meat\n• Fishes\n\nAll our meat is prepared according to halal standards. Enjoy your meal with peace of mind!"
+  },
+  {
+    "category": "vegetarian",
+    "keywords": ["vegetarian", "veg", "mboga", "no meat", "bila nyama"],
+    "response": "🥬 **Vegetarian Options:**\n\n• Sweet Potato\n• Irish Smart\n• Chapati Beans\n• Boiled Maize\n• Donna Josia (Boiled Cassava)\n• Samosa (3pcs)\n• Apple\n\nAll fresh and delicious!"
+  },
+  {
+    "category": "payment",
+    "keywords": ["payment", "pay", "malipo", "lipa", "mpesa", "m-pesa", "tigo", "airtel", "cash", "card", "money", "pesa"],
+    "response": "💳 **Payment Methods:**\n\nWe accept:\n• 💵 Cash\n• 📱 M-Pesa\n• 📱 Tigo Pesa\n• 📱 Airtel Money\n• 🏦 Bank Transfer\n• 💳 Credit Card\n• 💳 Debit Card\n\nChoose what's easiest for you!"
+  },
+  {
+    "category": "pre_order",
+    "keywords": ["pre-order", "preorder", "pre order", "book", "reserve", "reservation", "kuagiza mapema", "agiza mapema", "ahead"],
+    "response": "📅 **Pre-Orders:**\n\nYes, we accept pre-orders! Here's how:\n\n1. Log in to your **Customer Portal**\n2. Browse the **Menu**\n3. Select your items\n4. Choose your **pickup time**\n5. Confirm your order\n\n✅ Your food will be fresh and ready when you arrive!"
+  },
+  {
+    "category": "special_request",
+    "keywords": ["special", "request", "maombi", "ombi", "custom", "complain", "lalamiko", "feedback", "suggestion"],
+    "response": "✨ **Special Requests:**\n\nWe welcome your requests! You can:\n\n• 📝 Add a note during checkout\n• 💬 Contact our staff directly\n• 📋 Use the **Feedback** section in the portal\n\nYour request will reach our team right away!"
+  },
+  {
+    "category": "events",
+    "keywords": ["event", "events", "tukio", "sherehe", "party", "christmas", "celebration", "catering"],
+    "response": "🎉 **Upcoming Events:**\n\n• 🎄 **CHRISTMAS DAY** — 2026-12-25\n  All customers welcome at Mlimani City!\n\nWant to book us for your own event? Contact our staff for catering options."
+  },
+  {
+    "category": "hours",
+    "keywords": ["hours", "open", "close", "time", "saa", "muda", "when"],
+    "response": "🕐 **Operating Hours:**\n\n• Monday – Friday: 7:00 AM – 9:00 PM\n• Saturday: 8:00 AM – 8:00 PM\n• Sunday: 9:00 AM – 6:00 PM\n\nCome visit us anytime during these hours!"
+  },
+  {
+    "category": "location",
+    "keywords": ["location", "where", "address", "mahali", "wapi", "anwani", "find"],
+    "response": "📍 **Our Location:**\n\nWe are located at the **main campus**, near the library.\n\nLook for the building with the orange cafeteria sign!\n\nNeed directions? Ask our staff at the entrance."
+  },
+  {
+    "category": "contact",
+    "keywords": ["contact", "phone", "email", "call", "wasiliana", "simu", "barua pepe"],
+    "response": "📞 **Contact Us:**\n\n• 📧 Email: support@cafeteria.com\n• 📱 Phone: Available in the Staff Portal\n• 💬 Or ask me right here!\n\nWe're happy to help!"
+  },
+  {
+    "category": "greeting",
+    "keywords": ["hello", "hi", "hey", "habari", "mambo", "jambo", "salamu", "wooza", "good morning", "good evening"],
+    "response": "👋 **Hello!** Welcome to our Cafeteria!\n\nI can help you with:\n• 🍽️ Menu and prices\n• 📦 Order tracking\n• 🥗 Dietary options\n• 📅 Pre-orders\n• ✨ Special requests\n\nWhat would you like to know?"
+  },
+  {
+    "category": "thanks",
+    "keywords": ["thanks", "thank", "asante", "shukrani", "appreciate"],
+    "response": "😊 **You're welcome!**\n\nIs there anything else I can help you with? Enjoy your meal! 🍽️"
+  },
+  {
+    "category": "goodbye",
+    "keywords": ["bye", "goodbye", "kwaheri", "see you", "later"],
+    "response": "👋 **Goodbye!**\n\nCome visit us soon. Enjoy your day! 🌟"
+  },
+  {
+    "category": "general",
+    "keywords": ["help", "advice", "what can you do", "msaada", "features"],
+    "response": "💡 **Cafeteria Assistant** — Here to help!\n\nI can assist with:\n• 🍽️ **Menu** — see what's available\n• 💰 **Prices** — ask about any dish\n• 📦 **Orders** — track your order\n• 🥗 **Dietary** — halal, vegetarian, vegan\n• 📅 **Pre-orders** — order in advance\n• ✨ **Requests** — special requests\n• 📍 **Location** — find us\n• 🕐 **Hours** — when we're open\n\nJust ask me anything!"
+  }
+]
