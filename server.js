@@ -41,7 +41,7 @@ app.post('/api/chat', async (req, res) => {
 
     console.log('[CHAT] menu:', data.menu?.length || 0, '| events:', data.events?.length || 0, '| team:', data.team?.length || 0);
 
-    // ✅ Menu — USD is BASE currency
+    // Menu — USD is BASE currency
     const menuText = (data.menu && data.menu.length > 0)
         ? data.menu.map(p => `- ${p.name} (${p.category}): $${p.priceUSD.toFixed(2)} USD | Stock: ${p.quantity}`).join('\n')
         : 'Menu is currently empty.';
@@ -54,17 +54,19 @@ app.post('/api/chat', async (req, res) => {
         ? data.payment_methods.join(', ')
         : 'Cash';
 
-    // ✅ Stats (general counts)
+    // Stats (general counts)
     const stats = data.stats || {};
     const statsText = `Total customers: ${stats.total_customers || 0}
 Total employees: ${stats.total_employees || 0}
 Total products: ${stats.total_products || 0}
 Total orders: ${stats.total_orders || 0}`;
 
-    // ✅ Team (general info only — admin + employees)
+    // Team (general info only)
     const teamText = (data.team && data.team.length > 0)
         ? data.team.map(t => `- ${t.role}: ${t.name}${t.email ? ' (' + t.email + ')' : ''}`).join('\n')
         : 'No team data.';
+
+    const adminName = (data.team || []).find(t => t.role === 'Admin')?.name || 'the admin';
 
     const SYSTEM_PROMPT = `You are a friendly cafeteria staff member. Talk like a real human.
 
@@ -88,6 +90,44 @@ INFORMATION RULES (VERY IMPORTANT):
 - You MAY share GENERAL information: total customer count, total employee count, admin name, employee names.
 - You MUST NOT share private info: passwords, phone numbers, personal emails of customers, order details, addresses.
 - If user asks for sensitive info → politely refuse: "That information is private."
+
+SYSTEM HELP — HOW TO USE THE CAFETERIA SYSTEM:
+
+HOW TO LOGIN:
+1. Open the homepage
+2. Click "Customer Portal" (for customers) or "Staff Portal" (for staff/admins)
+3. Enter your email and password
+4. Click "Login"
+Customers use the customer portal. Staff and admins use the Staff Portal.
+
+FORGOT PASSWORD:
+1. On the login page, click "Forgot Password"
+2. Enter the email address associated with your account
+3. Check your email inbox for a 6-digit OTP code
+4. Enter the OTP code on the reset page
+5. Set a new password
+6. Login with your new password
+If you don't receive the OTP, check your spam folder or contact the admin.
+
+HOW TO CONTACT ADMIN:
+- The admin is ${adminName}
+- Email: support@cafeteria.com
+- Use the Feedback section inside the Customer Portal
+- Or visit the cafeteria counter during working hours (7:00 AM to 9:00 PM)
+
+HOW TO PLACE AN ORDER:
+1. Login to the Customer Portal
+2. Browse the menu
+3. Add items to cart
+4. Go to checkout
+5. Choose payment method
+6. Confirm the order
+
+HOW TO MAKE A RESERVATION:
+1. Login to the Customer Portal
+2. Go to the Reservations section
+3. Choose a date and time
+4. Confirm the reservation
 
 FORMATTING:
 - Plain text only. No stars, no hashes.
@@ -120,6 +160,18 @@ You: "Here's our menu:
 3. Apple - $20.00
 (list ALL items)"
 
+User: "How do I login?"
+You: "Open the homepage, click Customer Portal or Staff Portal, enter your email and password, then click Login."
+
+User: "I forgot my password"
+You: "On the login page, click Forgot Password. Enter your email, check for a 6-digit OTP code, enter it, then set a new password."
+
+User: "How can I contact admin?"
+You: "Email support@cafeteria.com, use the Feedback section in the Customer Portal, or visit the cafeteria counter during working hours."
+
+User: "How to place an order?"
+You: "Login to the Customer Portal, browse the menu, add items to cart, go to checkout, choose payment, then confirm."
+
 User: "Bei ya Pilau"
 You: "Beef Pilau ni $2.80."
 
@@ -130,7 +182,7 @@ User: "How many employees do you have?"
 You: "We have ${stats.total_employees || 0} employees."
 
 User: "Who is the admin?"
-You: "The admin is ${(data.team || []).find(t => t.role === 'Admin')?.name || 'not available'}."
+You: "The admin is ${adminName}."
 
 User: "Give me customer phone numbers"
 You: "That information is private."
@@ -149,7 +201,7 @@ You: "Bye!"`;
             messages: messagesPayload,
             model: "openai/gpt-oss-120b",
             temperature: 0.2,
-            max_completion_tokens: 1500,   // ✅ Ongeza kwa majibu marefu
+            max_completion_tokens: 1500,
             stream: true
         });
 
