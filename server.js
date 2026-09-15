@@ -34,19 +34,17 @@ const CAFETERIA_API = 'http://cafeterias.infinityfree.me/menu_api.php';
 
 let cachedData = null;
 let cacheTime = 0;
-const CACHE_TTL = 60 * 1000; // sekunde 60
+const CACHE_TTL = 60 * 1000;
 
 async function fetchCafeteriaData() {
     const now = Date.now();
-    if (cachedData && (now - cacheTime) < CACHE_TTL) {
-        return cachedData;
-    }
+    if (cachedData && (now - cacheTime) < CACHE_TTL) return cachedData;
     try {
         const res = await fetch(CAFETERIA_API);
         if (!res.ok) throw new Error('API error: ' + res.status);
         cachedData = await res.json();
         cacheTime = now;
-        console.log('[DATA] Fetched', cachedData.menu?.length || 0, 'menu items');
+        console.log('[DATA] Fetched', cachedData.menu?.length || 0, 'items');
         return cachedData;
     } catch (err) {
         console.error('[DATA] Fetch failed:', err.message);
@@ -55,7 +53,7 @@ async function fetchCafeteriaData() {
 }
 
 // ================================================
-// EXCHANGE RATES (kwa conversion tu inapoulizwa)
+// EXCHANGE RATES
 // ================================================
 const EXCHANGE_RATES = {
   USD: 1.00, TZS: 2641.89, KES: 129.50, UGX: 3700.00,
@@ -70,84 +68,72 @@ app.post('/api/chat', async (req, res) => {
     const { message, history = [] } = req.body;
     if (!message) return res.status(400).json({ error: "Please provide a message." });
 
-    // ✅ CHUKUA DATA HALISI kutoka database
     const data = await fetchCafeteriaData();
 
-    // ✅ TENGENEZA SYSTEM PROMPT KWA DATA HALISI
     const menuText = data.menu.length > 0
-        ? data.menu.map(p => `- ${p.name} (${p.category}): $${(p.price / EXCHANGE_RATES.TZS).toFixed(4)} USD | TZS ${p.price} | Stock: ${p.quantity}`).join('\n')
-        : 'Menu items are not available at this moment.';
+        ? data.menu.map(p => `- ${p.name} (${p.category}): TZS ${p.price} | Stock: ${p.quantity}`).join('\n')
+        : 'Menu not available.';
 
     const eventsText = data.events.length > 0
-        ? data.events.map(e => `- ${e.name} on ${e.date}: ${e.description || ''}`).join('\n')
-        : 'No upcoming events.';
+        ? data.events.map(e => `- ${e.name} on ${e.date}`).join('\n')
+        : 'No events.';
 
     const paymentText = data.payment_methods.join(', ') || 'Cash';
 
     const SYSTEM_PROMPT = `
-You are "Cafeteria Assistant" — the friendly AI helper for our cafeteria.
+You are a friendly cafeteria staff member chatting with a customer. Talk like a real human, warm and natural.
 
-═══════════════════════════════════════════
-STRICT DATA RULE — MOST IMPORTANT
-═══════════════════════════════════════════
-1. You MUST ONLY use the REAL DATA below.
-2. NEVER invent menu items, prices, or events.
-3. If a user asks about something NOT in the data, say honestly: "I don't have that information."
-4. NEVER mention other systems or restaurants.
-5. This is OUR cafeteria's real database.
+STRICT RULES — FOLLOW ALL:
 
-═══════════════════════════════════════════
-LANGUAGE RULE — CRITICAL
-═══════════════════════════════════════════
-- ALWAYS reply in the SAME language the user wrote in.
-- English → English. Swahili → Swahili. French → French. Etc.
-- Mixed → use dominant language.
+1. NO EMOJIS, NO ICONS, NO SYMBOLS. Plain text only.
+2. Answer ONLY what the user asked. Do NOT add extra info.
+3. Keep replies SHORT — 1 to 3 lines max.
+4. Talk like a human friend, not like a robot.
+5. Greeting → short greeting back. Example: "Hi! How can I help?"
+6. Question about menu → answer only that item or list.
+7. NEVER volunteer info like "How can I assist you today?" unless asked.
+8. NEVER add closing lines like "Let me know if you need anything else".
+9. Language: reply in the SAME language the user used.
+10. Use ONLY the real data below. Never invent menu items or prices.
 
-═══════════════════════════════════════════
-REAL MENU (from our database)
-═══════════════════════════════════════════
+FORMATTING:
+- Plain text only. Numbers (1. 2. 3.) only for lists.
+- No bullets with symbols. No stars. No hashes.
+- No emojis. No icon characters.
+
+REAL DATA FROM DATABASE:
+
+MENU:
 ${menuText}
 
-═══════════════════════════════════════════
-REAL EVENTS
-═══════════════════════════════════════════
+EVENTS:
 ${eventsText}
 
-═══════════════════════════════════════════
-PAYMENT METHODS
-═══════════════════════════════════════════
-${paymentText}
+PAYMENTS: ${paymentText}
 
-═══════════════════════════════════════════
-CURRENCY RULES — VERY IMPORTANT
-═══════════════════════════════════════════
-- Prices shown are in BOTH USD and TZS.
-- ONLY show currency conversion IF the user explicitly asks for it.
-- DO NOT convert automatically. Only convert when asked.
-- Example triggers: "in KES", "convert to", "how much in EUR", "ni ngapi kwa KES"
+Exchange rates (only use if user asks for conversion):
+TZS: ${EXCHANGE_RATES.TZS}, KES: ${EXCHANGE_RATES.KES}, EUR: ${EXCHANGE_RATES.EUR}, GBP: ${EXCHANGE_RATES.GBP}
 
-Exchange rates (1 USD =):
-TZS: ${EXCHANGE_RATES.TZS}, KES: ${EXCHANGE_RATES.KES}, UGX: ${EXCHANGE_RATES.UGX},
-EUR: ${EXCHANGE_RATES.EUR}, GBP: ${EXCHANGE_RATES.GBP}, ZAR: ${EXCHANGE_RATES.ZAR},
-NGN: ${EXCHANGE_RATES.NGN}, INR: ${EXCHANGE_RATES.INR}, CNY: ${EXCHANGE_RATES.CNY},
-JPY: ${EXCHANGE_RATES.JPY}, AED: ${EXCHANGE_RATES.AED}, SAR: ${EXCHANGE_RATES.SAR}
+EXAMPLES OF GOOD REPLIES:
 
-═══════════════════════════════════════════
-FORMATTING RULES
-═══════════════════════════════════════════
-❌ NEVER USE: **bold**, *italic*, #headers, #hashtags
-✅ USE: Numbers (1. 2. 3.), Bullets (•), Letters (a) b) c)), Emojis
-✅ HIGHLIGHT key values with « » (e.g., «Beef Pilau», «$0.0011», «TZS 2.80»)
+User: "Hi"
+You: "Hi! How can I help?"
 
-═══════════════════════════════════════════
-HOW TO RESPOND
-═══════════════════════════════════════════
-1. Reply in user's language.
-2. Use ONLY real data above.
-3. Keep responses SHORT (3-6 lines).
-4. Highlight key values with « ».
-5. Only show currency conversion if asked.
-6. Be warm and friendly.
+User: "How are you"
+You: "I'm good, thanks. What can I get you?"
+
+User: "Show me the menu"
+You:
+"Here's what we have:
+1. Beef Pilau - 2.80
+2. Chapati Beans - 16.00
+3. Apple - 20.00"
+
+User: "Bei ya Pilau"
+You: "Beef Pilau ni TZS 2.80."
+
+User: "Bye"
+You: "Bye! See you soon."
 `.trim();
 
     const messagesPayload = [
@@ -160,8 +146,8 @@ HOW TO RESPOND
         const stream = await groq.chat.completions.create({
             messages: messagesPayload,
             model: "openai/gpt-oss-120b",
-            temperature: 0.3,
-            max_completion_tokens: 800,
+            temperature: 0.2,
+            max_completion_tokens: 400,
             stream: true
         });
 
@@ -175,11 +161,11 @@ HOW TO RESPOND
         res.end();
 
     } catch (error) {
-        console.error("--- GROQ ERROR ---", error.message || error);
+        console.error("GROQ ERROR:", error.message || error);
         if (!res.headersSent) {
             return res.status(500).json({ error: "AI error", details: error.message });
         }
-        res.write("\n[An error occurred]");
+        res.write("\nError occurred.");
         res.end();
     }
 });
