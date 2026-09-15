@@ -38,9 +38,8 @@ app.post('/api/chat', async (req, res) => {
 
     const data = cafeteria_data || { menu: [], events: [], payment_methods: [], stats: {}, team: [] };
 
-    console.log('[CHAT] menu:', data.menu?.length || 0, '| events:', data.events?.length || 0);
+    console.log('[CHAT] menu:', data.menu?.length || 0, '| events:', data.events?.length || 0, '| team:', data.team?.length || 0);
 
-    // Menu — USD is BASE
     const menuText = (data.menu && data.menu.length > 0)
         ? data.menu.map(p => `- ${p.name} (${p.category}): $${p.priceUSD.toFixed(2)} USD | Stock: ${p.quantity}`).join('\n')
         : 'Menu is currently empty.';
@@ -54,10 +53,7 @@ app.post('/api/chat', async (req, res) => {
         : 'Cash';
 
     const stats = data.stats || {};
-    const statsText = `Total customers: ${stats.total_customers || 0}
-Total employees: ${stats.total_employees || 0}
-Total products: ${stats.total_products || 0}
-Total orders: ${stats.total_orders || 0}`;
+    const statsText = `Total customers: ${stats.total_customers || 0}\nTotal employees: ${stats.total_employees || 0}\nTotal products: ${stats.total_products || 0}\nTotal orders: ${stats.total_orders || 0}`;
 
     const teamText = (data.team && data.team.length > 0)
         ? data.team.map(t => `- ${t.role}: ${t.name}${t.email ? ' (' + t.email + ')' : ''}`).join('\n')
@@ -65,7 +61,6 @@ Total orders: ${stats.total_orders || 0}`;
 
     const adminName = (data.team || []).find(t => t.role === 'Admin')?.name || 'the admin';
 
-    // ✅ FOOD KNOWLEDGE — DYNAMIC kutoka database
     let foodKnowledgeText = '';
     if (data.menu && data.menu.length > 0) {
         data.menu.forEach(p => {
@@ -99,16 +94,18 @@ CRITICAL — CURRENCY RULES:
 - Rates (1 USD =): TZS: ${EXCHANGE_RATES.TZS}, KES: ${EXCHANGE_RATES.KES}, EUR: ${EXCHANGE_RATES.EUR}, GBP: ${EXCHANGE_RATES.GBP}
 
 CRITICAL — FOOD KNOWLEDGE RULES:
-- The FOOD KNOWLEDGE section below is updated daily from our database.
+- The FOOD KNOWLEDGE section below is updated from our database.
 - ONLY share this info when user asks about it.
 - Examples that trigger sharing:
   - "What are the benefits of X?" / "Faida za X?"
   - "Is X healthy?"
   - "Nutrition of X?" / "Virutubisho vya X?"
-  - "Can I eat X if I have diabetes?"
   - "Hasara za X?" / "Side effects of X?"
 - Do NOT volunteer nutrition info if user just asks for the menu.
-- If food is not in FOOD KNOWLEDGE section, say: "I don't have detailed nutrition info for that item."
+- If food is NOT in FOOD KNOWLEDGE section:
+  - DO NOT say "I don't have info" repeatedly.
+  - Say exactly: "Samahani, taarifa za lishe za [jina la chakula] hazipo kwenye mfumo bado. Mwone admin aongeze." (kama mtumiaji anaongea Kiswahili)
+  - Or in English: "Sorry, nutrition info for [food name] is not yet in our system. Please ask admin to add it."
 - NEVER invent nutrition facts.
 
 INFORMATION RULES:
@@ -117,7 +114,6 @@ INFORMATION RULES:
 - If asked for private info → "That information is private."
 
 SYSTEM HELP:
-
 HOW TO LOGIN:
 1. Open the homepage
 2. Click Customer Portal (customers) or Staff Portal (staff)
@@ -167,33 +163,24 @@ FOOD KNOWLEDGE (share ONLY when asked):
 ${foodKnowledgeText || 'No detailed nutrition info available yet. Please ask the admin to update the food_info table.'}
 
 EXAMPLES:
-
 User: "Hi"
 You: "Hi! How can I help?"
-
 User: "Show me the menu"
 You: "Here's our menu:
 1. Beef Pilau - $2.80
 (list all)"
-
 User: "What are the benefits of Beef Pilau?"
 You: "Beef Pilau is high in protein from beef and gives energy from rice. Rich in iron and B vitamins."
-
 User: "Faida za Apple?"
 You: "Apple ni tajiri wa fiber na antioxidants. Inasaidia mmeng'enyo na kinga ya mwili."
-
 User: "Is Samosa healthy?"
 You: "Samosa is fried, so it's high in oil and calories. It's fine as an occasional snack but not for daily eating."
-
 User: "Do you have Apple?"
 You: "Yes, we have Apple in stock."
-
 User: "Bei ya Pilau"
 You: "Beef Pilau ni $2.80."
-
 User: "Give me customer phone numbers"
 You: "That information is private."
-
 User: "Bye"
 You: "Bye!"`;
 
